@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        canvas{
+            padding: 0;
+            margin: auto;
+            display: block;
+            width: 600px;
+}
+        body{
+            padding: 0;
+            margin: 0;
+            background-color: black;
+        }
+    </style>
+    <title>Christmas Tree</title>
+</head>
+<body>    
+
+<script>
+var size = 600;
+var canvas = document.createElement('canvas');
+canvas.width = size;
+canvas.height = size;
+document.body.appendChild(canvas);
+var ctx = canvas.getContext('2d');
+var p3d = [];
+
+var p = [Math.random(), Math.random(), Math.random(),0];
+for (var i = 0; i < 100000; i++) {
+    p3d.push([p[0],p[1],p[2],p[3]]);
+    var t = Math.random();
+    if (t<0.4) {
+        _y = 0.4 * p[1];
+        _x = 0.1 * p[0];
+        _z = 0.6 * p[2];
+        var r = Math.floor(3*t/0.4)/3.0;
+        var rc = Math.cos(Math.PI*2.0*r);
+        var rs = Math.sin(Math.PI*2.0*r);
+        p[1] = _x+0.1*r+0.5*_y*_y;
+        p[0] = _y*rc+_z*rs;
+        p[2] = _z*rc-_y*rs;
+        p[3] = 0.2*t + 0.8*p[3];
+    } else {
+        p[1] = 0.2 + 0.8*p[1];
+        p[0] = 0.8 * p[0];
+        p[2] = 0.8 * p[2];
+        p[3] = 0.2 + 0.8*p[3];
+    }
+}
+var rot = 0.0;
+
+function render() {
+    rot = rot + 0.1;
+    var rc = Math.cos(rot);
+    var rs = Math.sin(rot);
+
+    ctx.strokeStyle='#FF7F00';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(size/2,size/8);
+    ctx.lineTo(size/2,size*15/16);
+    ctx.stroke();
+
+    var img = ctx.getImageData(0, 0, size, size);
+    for (var j = 0; j < size*size; j++) {
+        img.data[4*j+0] = 0.5*img.data[4*j+0];
+        img.data[4*j+1] = 0.5*img.data[4*j+1];
+        img.data[4*j+2] = 0.5*img.data[4*j+2];
+        img.data[4*j+3] = 255;
+    }
+    
+    for (var i = 0; i < p3d.length; i++) {
+        var px = p3d[i][0];
+        var py = 0.5 - p3d[i][1];
+        var pz = p3d[i][2];
+        var col = Math.floor(128.0*p3d[i][3]);
+        
+        var _x = rc*px + rs*pz;
+        var _z = rc*pz - rs*px;
+
+        var z = 3.0 * size / (_z + 4.0);
+        var x = size / 2 + Math.round(_x * z);        
+        var y = size / 2 + Math.round(py * z);
+
+        if(x>=0&&y>=0&&x<size&&y<size) {
+            img.data[4 * (y * size + x) + 0] = col;
+            img.data[4 * (y * size + x) + 1] = 128+col;
+            img.data[4 * (y * size + x) + 2] = col;
+            img.data[4 * (y * size + x) + 3] = 255;
+
+        }
+    }
+
+    ctx.putImageData(img, 0, 0);
+}
+
+setInterval(render, 100 / 30);
+    </script>
+</body>
+
+</html>
